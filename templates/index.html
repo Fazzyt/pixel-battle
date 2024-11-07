@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Battle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body oncontextmenu="return false;">
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="info-overlay" id="online-counter">
+        <div class="info-box">Онлайн: <span>0</span></div>
+    </div>
+    
+    <div class="info-overlay" id="coordinates">
+        <div class="info-box">X: <span>0</span>, Y: <span>0</span></div>
+    </div>
+
+    <div class="ui-container">
+        <div class="color-palette">
+            <div class="color-option selected" data-color="#000000" style="background-color: #000000;"></div>
+            <div class="color-option" data-color="#FF0000" style="background-color: #FF0000;"></div>
+            <div class="color-option" data-color="#00FF00" style="background-color: #00FF00;"></div>
+            <div class="color-option" data-color="#0000FF" style="background-color: #0000FF;"></div>
+            <div class="color-option" data-color="#FFFF00" style="background-color: #FFFF00;"></div>
+            <div class="color-option" data-color="#FF00FF" style="background-color: #FF00FF;"></div>
+            <div class="color-option" data-color="#00FFFF" style="background-color: #00FFFF;"></div>
+            <div class="color-option" data-color="#FFFFFF" style="background-color: #FFFFFF;"></div>
+        </div>
+        
+        <div id="cooldown">Cooldown: 0s</div>
+        
+        <button id="confirm-pixel" style="display: none;">Подтвердить</button>
+    </div>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/canvas.js"></script>
+    <script src="static/js/controls.js"></script>
+    <script src="static/js/websocket.js"></script>
+</body>
+</html>
