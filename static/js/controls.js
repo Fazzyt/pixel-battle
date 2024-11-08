@@ -48,5 +48,5 @@ function startCooldown() {
 
 function updateCooldownDisplay() {
     document.getElementById('cooldown').innerText = 
-        `Cooldown: ${Math.max(0, cooldown)}s`;
+        `Следующий пиксель через: ${Math.max(0, cooldown)} секунд.`;
 }

@@ -29,15 +29,24 @@ body {
 
 .ui-container {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 0;
+    right: 0;
+    bottom: 0;
     background-color: var(--ui-background);
     padding: 20px;
-    border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--ui-border);
     backdrop-filter: blur(10px);
-    min-width: 200px;
+    width: 100%;
+    max-width: 200px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.color-info {
+    color: var(--text-color);
+    font-size: 18px;
 }
 
 .color-palette {
@@ -50,7 +59,7 @@ body {
 .color-option {
     width: 35px;
     height: 35px;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.3s ease;
@@ -96,19 +105,17 @@ body {
 }
 
 .info-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin: 5px;
+
     position: fixed;
     font-family: Arial, sans-serif;
     font-size: 14px;
     color: #fff;
     text-shadow: 1px 1px 0 #000;
     pointer-events: none;
-}
-
-.info-box {
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 5px 10px;
-    border-radius: 3px;
-    margin: 5px;
 }
 
 #online-counter {
@@ -124,14 +131,9 @@ body {
 /* Мобильная версия */
 @media (max-width: 768px) {
     .ui-container {
-        top: auto;
-        bottom: 20px;
-        right: 50%;
-        transform: translateX(50%);
         width: 90%;
-        max-width: 400px;
+        max-width: 150px;
     }
-
     .color-palette {
         grid-template-columns: repeat(8, 1fr);
     }
