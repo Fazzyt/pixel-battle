@@ -29,7 +29,11 @@ document.getElementById('confirm-pixel').addEventListener('click', () => {
 function startCooldown() {
     isCooldown = true;
     cooldown = CONFIG.COOLDOWN_TIME;
-    document.getElementById('confirm-pixel').style.display = 'none';
+    const confirmButton = document.getElementById('confirm-pixel');
+    
+    confirmButton.style.backgroundColor = '#2c3e50';
+    confirmButton.disabled = true;
+
     updateCooldownDisplay();
 
     const interval = setInterval(() => {
@@ -39,9 +43,8 @@ function startCooldown() {
         if (cooldown <= 0) {
             clearInterval(interval);
             isCooldown = false;
-            if (pixelCanvas.selectedPixel) {
-                document.getElementById('confirm-pixel').style.display = 'block';
-            }
+            confirmButton.style.backgroundColor = '#2ecc71'; 
+            confirmButton.disabled = false;
         }
     }, 1000);
 }

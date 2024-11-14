@@ -123,12 +123,14 @@ class PixelCanvas {
             if (this.isValidPosition(pos.x, pos.y)) {
                 this.selectPixel(pos.x, pos.y);
             }
+            this.lastX = touch.clientX;
+            this.lastY = touch.clientY;
         } else if (event.touches.length === 2) {
             // Два касания - начало масштабирования
             this.lastTouchDistance = this.getTouchDistance(event.touches);
         }
     }
-
+    
     handleTouchMove(event) {
         event.preventDefault();
         if (event.touches.length === 1) {
@@ -136,7 +138,7 @@ class PixelCanvas {
             const touch = event.touches[0];
             const pos = this.screenToCanvas(touch.clientX, touch.clientY);
             this.updateCoordinatesDisplay(pos.x, pos.y);
-
+    
             if (this.lastX && this.lastY) {
                 const deltaX = touch.clientX - this.lastX;
                 const deltaY = touch.clientY - this.lastY;
@@ -151,20 +153,37 @@ class PixelCanvas {
             const currentDistance = this.getTouchDistance(event.touches);
             const delta = currentDistance / this.lastTouchDistance;
             
+            const touch1 = event.touches[0];
+            const touch2 = event.touches[1];
+            const centerX = (touch1.clientX + touch2.clientX) / 2;
+            const centerY = (touch1.clientY + touch2.clientY) / 2;
+    
             const newScale = this.scale * delta;
             if (newScale >= CONFIG.MIN_SCALE && newScale <= CONFIG.MAX_SCALE) {
+                const oldWorldX = (centerX - this.offsetX) / this.scale;
+                const oldWorldY = (centerY - this.offsetY) / this.scale;
+    
                 this.scale = newScale;
+    
+                const newWorldX = (centerX - this.offsetX) / this.scale;
+                const newWorldY = (centerY - this.offsetY) / this.scale;
+    
+                this.offsetX += (newWorldX - oldWorldX) * this.scale;
+                this.offsetY += (newWorldY - oldWorldY) * this.scale;
+    
                 this.lastTouchDistance = currentDistance;
                 this.render();
             }
         }
     }
-
+    
     handleTouchEnd(event) {
         event.preventDefault();
-        this.lastX = null;
-        this.lastY = null;
-        this.lastTouchDistance = null;
+        if (event.touches.length === 0) {
+            this.lastX = null;
+            this.lastY = null;
+            this.lastTouchDistance = null;
+        }
     }
 
     getTouchDistance(touches) {
@@ -197,13 +216,11 @@ class PixelCanvas {
     selectPixel(x, y) {
         this .selectedPixel = { x, y };
         this.render();
-        document.getElementById('confirm-pixel').style.display = 'block';
     }
 
     clearSelection() {
         this.selectedPixel = null;
         this.render();
-        document.getElementById('confirm-pixel').style.display = 'none';
     }
 
     setPixel(x, y, color) {

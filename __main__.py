@@ -13,7 +13,8 @@ from database import DatabaseManager
 # Настройка логирования
 logging.basicConfig(
     level=logging.DEBUG, 
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[logging.FileHandler('logs.log'), logging.StreamHandler()]
 )
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,14 @@ db_manager = DatabaseManager()
 
 @app.route('/')
 async def index():
-    return await render_template('index.html')
+    return await render_template(
+        'index.html', 
+        colors = config.colors,
+        canvas_width = config.CANVAS_WIDTH,
+        canvas_height = config.CANVAS_HEIGHT,
+        pixel_size = config.PIXEL_SIZE,
+        cooldown_time = config.COOLDOWN_TIME
+        )
 
 @app.websocket('/ws')
 async def ws():

@@ -6,7 +6,6 @@ ws.onopen = () => {
 
 ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
-    console.log('Received message:', message);
     
     switch (message.type) {
         case 'init':
@@ -45,7 +44,7 @@ ws.onerror = (error) => {
 
 ws.onclose = () => {
     console.log('Disconnected from server');
-    // Попытка переподключения через 5 секунд
+
     setTimeout(() => {
         window.location.reload();
     }, 5000);
