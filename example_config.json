@@ -1,0 +1,17 @@
+{
+  "host": "0.0.0.0",
+  "port": 80,
+  "debug": false,
+  "canvas_width": 2000,
+  "canvas_height": 600,
+  "cooldown_time": 2,
+  "pixel_size": 2,
+  "colors": [
+    "#0083CA", "#283A97", "#00AEEF", "#6ACFF6",
+    "#000000", "#808080", "#A9A9A9", "#A52A2A",
+    "#C0C0C0", "#800080", "#008000", "#0000FF", 
+    "#FF0000", "#6495ED", "#FFA500", "#FFFF00",
+    "#00FFFF", "#FFB6C1", "#FFC0CB", "#90EE90",
+    "#D8BFD8", "#ADD8E6", "#FF69B4", "#FFFFFF"
+  ]
+}

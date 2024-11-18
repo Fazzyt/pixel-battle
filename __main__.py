@@ -6,16 +6,10 @@ import logging
 from quart import Quart, websocket, render_template
 from datetime import datetime
 
-import config
+import config as config
 
 from database import DatabaseManager
 
-# Настройка логирования
-logging.basicConfig(
-    level=logging.DEBUG, 
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler('logs.log'), logging.StreamHandler()]
-)
 logger = logging.getLogger(__name__)
 
 app = Quart(__name__)
