@@ -67,44 +67,83 @@ async def ws():
         }))
 
         while True:
-            data = await websocket.receive()
-            message = json.loads(data)
-            logger.debug(f"Received message from client {client_id}: {message}")
-            
-            if message['type'] == 'pixel_update':
-                current_time = time.time()
+            try:
+                data = await websocket.receive()
+                message = json.loads(data)
+                logger.debug(f"Received message from client {client_id}: {message}")
                 
-                # Cooldown check
-                if current_time - config.USER_LAST_PIXEL[client_id] < config.COOLDOWN_TIME:
-                    await websocket.send(json.dumps({
-                        'type': 'error',
-                        'message': f'Wait {config.COOLDOWN_TIME} seconds between pixels'
-                    }))
-                    continue
+                if message['type'] == 'pixel_update':
+                    current_time = time.time()
+                    
+                    # Cooldown check
+                    if current_time - config.USER_LAST_PIXEL[client_id] < config.COOLDOWN_TIME:
+                        await websocket.send(json.dumps({
+                            'type': 'error',
+                            'message': f'Wait {config.COOLDOWN_TIME} seconds between pixels'
+                        }))
+                        continue
 
-                x, y, color = message['x'], message['y'], message['color']
-                
-                # Validate coordinates
-                if 0 <= x < config.CANVAS_WIDTH and 0 <= y < config.CANVAS_HEIGHT:
-                    # Update canvas
-                    config.canvas[y][x] = {"color": color, "last_update": current_time}
-                    config.USER_LAST_PIXEL[client_id] = current_time
-                    
-                    # Prepare update message
-                    update = {
-                        'type': 'pixel_update',
-                        'x': x,
-                        'y': y,
-                        'color': color
-                    }
-                    
-                    # Broadcast update and save to database
-                    logger.debug(f"Broadcasting pixel update: {update}")
-                    await broadcast(json.dumps(update))
-                    
-                    await db_manager.save_pixel(x, y, color, current_time)
-                else:
-                    logger.warning(f"Invalid pixel coordinates: x={x}, y={y}")
+                    # Validate input data types
+                    try:
+                        x = int(message['x'])
+                        y = int(message['y'])
+                        color = str(message['color'])
+                    except (ValueError, KeyError) as e:
+                        logger.warning(f"Invalid input data: {e}")
+                        await websocket.send(json.dumps({
+                            'type': 'error',
+                            'message': 'Invalid pixel data'
+                        }))
+                        continue
+
+                    # Validate coordinates with strict bounds checking
+                    if (0 <= x < config.CANVAS_WIDTH and 
+                        0 <= y < config.CANVAS_HEIGHT and
+                        color in config.colors):  # Дополнительная проверка цвета
+                        
+                        # Update canvas
+                        config.canvas[y][x] = {
+                            "color": color, 
+                            "last_update": current_time
+                        }
+                        config.USER_LAST_PIXEL[client_id] = current_time
+                        
+                        # Prepare update message
+                        update = {
+                            'type': 'pixel_update',
+                            'x': x,
+                            'y': y,
+                            'color': color
+                        }
+                        
+                        # Broadcast update and save to database
+                        logger.debug(f"Broadcasting pixel update: {update}")
+                        await broadcast(json.dumps(update))
+                        
+                        await db_manager.save_pixel(x, y, color, current_time)
+                    else:
+                        # Логируем попытку установить пиксель с некорректными данными
+                        logger.warning(
+                            f"Invalid pixel data from client {client_id}: "
+                            f"x={x}, y={y}, color={color}"
+                        )
+                        await websocket.send(json.dumps({
+                            'type': 'error',
+                            'message': 'Invalid pixel coordinates or color'
+                        }))
+
+            except json.JSONDecodeError:
+                logger.warning(f"Invalid JSON from client {client_id}")
+                await websocket.send(json.dumps({
+                    'type': 'error',
+                    'message': 'Invalid JSON format'
+                }))
+            except Exception as e:
+                logger.error(f"Unexpected error handling message: {e}")
+                await websocket.send(json.dumps({
+                    'type': 'error',
+                    'message': 'Unexpected server error'
+                }))
 
     except asyncio.CancelledError:
         logger.info(f"Client {client_id} connection cancelled")
@@ -121,11 +160,13 @@ async def ws():
         }))
 
 async def broadcast(message):
-    for connection in config.ACTIVE_CONNECTIONS:
+    for connection in config.ACTIVE_CONNECTIONS.copy():  # Создаем копию для безопасности
         try:
             await connection.send(message)
         except Exception as e:
             logger.error(f"Broadcast error: {e}")
+            # Удаляем проблемное соединение
+            config.ACTIVE_CONNECTIONS.discard(connection)
 
 @app.before_serving
 async def startup():

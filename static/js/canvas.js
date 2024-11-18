@@ -253,7 +253,7 @@ class PixelCanvas {
         );
 
         // Draw grid
-        this.drawGrid();
+        // this.drawGrid();
 
         // Draw existing pixels
         for (const [coord, color] of this.pixels) {

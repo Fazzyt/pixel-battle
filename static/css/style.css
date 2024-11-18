@@ -1,7 +1,12 @@
+@font-face {
+    font-family: 'MullerExtraBold';
+    src: url('MullerExtraBold.ttf');
+}
+
 :root {
-    --primary-color: #3498db;
+    --primary-color: #00AEEF;
     --secondary-color: #2ecc71;
-    --background-color: #2c3e50;
+    --background-color: #283A97;
     --text-color: #ecf0f1;
     --ui-background: rgba(44, 62, 80, 0.95);
     --ui-border: rgba(236, 240, 241, 0.1);
@@ -12,7 +17,7 @@ body {
     padding: 0;
     overflow: hidden;
     background-color: var(--background-color);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'MullerExtraBold';
     color: var(--text-color);
 }
 
@@ -84,7 +89,6 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: 500;
     transition: all 0.3s ease;
 }
 
@@ -116,7 +120,6 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
     padding: 5px 10px;
     border-radius: 3px;
-    font-family: Arial, sans-serif;
     font-size: 14px;
     color: #fff;
     text-shadow: 1px 1px 0 #000;
