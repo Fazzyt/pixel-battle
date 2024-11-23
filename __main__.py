@@ -27,6 +27,8 @@ async def index():
         cooldown_time = config.COOLDOWN_TIME
         )
 
+
+
 @app.websocket('/ws')
 async def ws():
     
@@ -145,13 +147,8 @@ async def ws():
         logger.error(f"Error handling client {client_id}: {e}")
     finally:
         # Cleanup on disconnect
-        config.ACTIVE_CONNECTIONS.remove(websocket._get_current_object())
-        config.ONLINE_USER -= 1
-        logger.info(f"Client {client_id} disconnected. Total users: {config.ONLINE_USER}")
-        await broadcast(json.dumps({
-            'type': 'user_count',
-            'count': config.ONLINE_USER
-        }))
+        clean_up(client_id= client_id)
+        
 
 async def broadcast(message):
     for connection in config.ACTIVE_CONNECTIONS.copy():  # Создаем копию для безопасности
@@ -161,6 +158,17 @@ async def broadcast(message):
             logger.error(f"Broadcast error: {e}")
             # Удаляем проблемное соединение
             config.ACTIVE_CONNECTIONS.discard(connection)
+
+async def clean_up( client_id: int):
+
+    config.ACTIVE_CONNECTIONS.remove(websocket._get_current_object())
+
+    config.ONLINE_USER -= 1
+    logger.info(f"Client {client_id} disconnected. Total users: {config.ONLINE_USER}")
+    return await broadcast( json.dumps({
+                        'type': 'user_count',
+                        'count': config.ONLINE_USER
+                        }))
 
 @app.before_serving
 async def startup():
