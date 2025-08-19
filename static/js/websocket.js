@@ -9,7 +9,7 @@ ws.onmessage = (event) => {
     
     switch (message.type) {
         case 'init':
-            console.log('Initializing canvas with existing pixels');
+            console.log('Receiving initial pixels batch');
             message.pixels.forEach(pixel => {
                 pixelCanvas.setPixel(pixel.x, pixel.y, pixel.color);
             });

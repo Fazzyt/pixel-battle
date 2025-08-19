@@ -44,16 +44,17 @@ class DatabaseManager:
     async def load_canvas(self):
         async with self.async_session() as session:
             try:
-                result = await session.execute(select(PixelModel))
-                pixels = result.scalars().all()
-                return [
-                    {
+                # Используем потоковую загрузку
+                result = await session.stream(select(PixelModel))
+                pixels = []
+                async for pixel in result.scalars():
+                    pixels.append({
                         'x': pixel.x, 
                         'y': pixel.y, 
                         'color': pixel.color, 
                         'last_update': pixel.last_update
-                    } for pixel in pixels
-                ]
+                    })
+                return pixels
             except Exception as e:
                 print(f"Error loading canvas: {e}")
                 return []

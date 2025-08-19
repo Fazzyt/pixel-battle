@@ -274,8 +274,8 @@ class PixelCanvas {
     }
 
     drawGrid() {
-        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-        this.ctx.lineWidth = 0.1;
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.01)';
+        this.ctx.lineWidth = 0.01;
 
         // Vertical lines
         for (let x = 0; x <= CONFIG.CANVAS_WIDTH * this.scale; x += CONFIG.PIXEL_SIZE * this.scale) {

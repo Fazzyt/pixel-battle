@@ -147,7 +147,7 @@ async def ws():
         logger.error(f"Error handling client {client_id}: {e}")
     finally:
         # Cleanup on disconnect
-        clean_up(client_id= client_id)
+        await clean_up(client_id= client_id)
         
 
 async def broadcast(message):
