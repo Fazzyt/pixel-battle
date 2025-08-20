@@ -50,9 +50,6 @@ class PixelBattleApp {
         try {
             console.log('🚀 Initializing Pixel Battle App...');
             
-            // Инициализируем состояние канваса
-            appState.initializeCanvasState();
-            
             // Инициализируем DOM элементы
             await this.initializeDOM();
             
@@ -65,6 +62,9 @@ class PixelBattleApp {
             // Инициализируем UI
             this.initializeUI();
             
+            // Инициализируем состояние канваса
+            appState.initializeCanvasState();
+
             // Подключаемся к серверу
             await this.connectToServer();
             
@@ -76,7 +76,14 @@ class PixelBattleApp {
             appState.set('ui.isLoading', false);
             
             console.log('✅ Pixel Battle App initialized successfully');
-        
+            
+            // Принудительная инициализация размеров после всех компонентов
+            setTimeout(() => {
+                this.initializeCanvasSize();
+                this.centerCanvas();
+                console.log('🔄 Forced canvas initialization after components');
+            }, 300);
+
         } catch (error) {
             console.error('❌ Failed to initialize app:', error);
             appState.set('ui.isLoading', false);
@@ -125,48 +132,23 @@ class PixelBattleApp {
             onlineCounter: document.querySelector('#online-counter .info-text')
         };
         
-        // Проверяем обязательные элементы
-        const requiredElements = ['confirmButton', 'cooldownDisplay'];
-        for (const elementName of requiredElements) {
-            if (!this.ui[elementName]) {
-                console.warn(`⚠️ Required UI element not found: ${elementName}`);
+        // Ждем полной загрузки DOM и CSS
+        await new Promise(resolve => {
+            if (document.readyState === 'complete') {
+                resolve();
+            } else {
+                window.addEventListener('load', resolve);
             }
-        }
+        });
         
-        // Ждем немного, чтобы DOM полностью загрузился
+        // Дополнительная задержка для гарантии
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        // Принудительно устанавливаем размеры контейнера
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
-        
-        const availableWidth = window.innerWidth > 768 ? windowWidth - sidebarWidth : windowWidth;
-        const availableHeight = windowHeight - headerHeight;
-        
-        // Принудительно устанавливаем стили
-        this.canvasContainer.style.width = availableWidth + 'px';
-        this.canvasContainer.style.height = availableHeight + 'px';
-        
-        console.log('🔧 Forced container dimensions:', { width: availableWidth, height: availableHeight });
-        
-        // Инициализируем размеры canvas
+        // Принудительно инициализируем размеры канваса
         this.initializeCanvasSize();
         
-        // Дополнительная инициализация размеров через небольшую задержку
-        setTimeout(() => {
-            this.initializeCanvasSize();
-            console.log('🔄 Canvas size reinitialized after delay');
-            
-            // Принудительно центрируем канвас после инициализации
-            if (this.inputController) {
-                this.inputController.centerCanvas();
-                console.log('🎯 Canvas centered after initialization');
-            }
-        }, 200);
+        console.log('✅ DOM initialized');
     }
-    
     /**
      * Инициализация размеров canvas
      */
@@ -176,83 +158,58 @@ class PixelBattleApp {
             return;
         }
         
-        // Получаем размеры окна для fallback
+        // Принудительно показываем контейнер
+        this.canvasContainer.style.display = 'block';
+        this.canvasContainer.style.visibility = 'visible';
+        
+        // Получаем размеры окна
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         
-        // Получаем высоту верхней панели и ширину сайдбара
-        const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+        // Получаем высоту верхней панели
+        const header = document.querySelector('.top-bar');
+        const headerHeight = header ? header.offsetHeight : 60;
         
-        // Вычисляем доступную область для канваса
-        let availableWidth = windowWidth;
-        let availableHeight = windowHeight - headerHeight;
+        // Получаем ширину сайдбара
+        const sidebar = document.querySelector('.side-panel');
+        const sidebarWidth = sidebar && window.innerWidth > 768 ? sidebar.offsetWidth : 0;
         
-        // На десктопе учитываем сайдбар
-        if (window.innerWidth > 768) {
-            availableWidth = windowWidth - sidebarWidth;
-        }
+        // Вычисляем доступную область
+        const availableWidth = windowWidth - sidebarWidth;
+        const availableHeight = windowHeight - headerHeight;
         
         // Принудительно устанавливаем размеры контейнера
         this.canvasContainer.style.width = availableWidth + 'px';
         this.canvasContainer.style.height = availableHeight + 'px';
         
-        // Получаем размеры контейнера после установки стилей
-        const containerRect = this.canvasContainer.getBoundingClientRect();
+        // Принудительно пересчитываем layout
+        this.canvasContainer.getBoundingClientRect();
+        
         const dpr = window.devicePixelRatio || 1;
         
-        // Используем доступную область как размеры канваса
-        const canvasWidth = availableWidth;
-        const canvasHeight = availableHeight;
-        
-        console.log('📐 Canvas size debug:', {
-            windowSize: { width: windowWidth, height: windowHeight },
-            availableArea: { width: availableWidth, height: availableHeight },
-            headerHeight: headerHeight,
-            sidebarWidth: sidebarWidth,
-            dpr: dpr,
-            config: {
-                CANVAS_WIDTH: this.config.CANVAS_WIDTH,
-                CANVAS_HEIGHT: this.config.CANVAS_HEIGHT,
-                PIXEL_SIZE: this.config.PIXEL_SIZE,
-                calculatedSize: {
-                    width: this.config.CANVAS_WIDTH * this.config.PIXEL_SIZE,
-                    height: this.config.CANVAS_HEIGHT * this.config.PIXEL_SIZE
-                }
-            },
-            finalSize: { width: canvasWidth, height: canvasHeight }
-        });
-        
         // Устанавливаем размеры канваса
-        this.canvas.width = canvasWidth * dpr;
-        this.canvas.height = canvasHeight * dpr;
+        this.canvas.width = availableWidth * dpr;
+        this.canvas.height = availableHeight * dpr;
         
         const ctx = this.canvas.getContext('2d');
         ctx.scale(dpr, dpr);
         
-        this.canvas.style.width = canvasWidth + 'px';
-        this.canvas.style.height = canvasHeight + 'px';
+        this.canvas.style.width = availableWidth + 'px';
+        this.canvas.style.height = availableHeight + 'px';
         
         console.log('🖼️ Canvas initialized:', { 
-            width: canvasWidth, 
-            height: canvasHeight, 
+            width: availableWidth, 
+            height: availableHeight,
             dpr,
-            canvasElement: this.canvas,
-            containerElement: this.canvasContainer,
-            canvasVisible: this.canvas.offsetHeight > 0 && this.canvas.offsetWidth > 0,
-            containerVisible: this.canvasContainer.offsetHeight > 0 && this.canvasContainer.offsetWidth > 0,
-            logicalCanvasSize: {
-                width: this.config.CANVAS_WIDTH * this.config.PIXEL_SIZE,
-                height: this.config.CANVAS_HEIGHT * this.config.PIXEL_SIZE
-            }
+            headerHeight,
+            sidebarWidth
         });
         
-        // Принудительно перерисовываем после изменения размеров
+        // Принудительно перерисовываем
         if (this.renderEngine) {
             this.renderEngine.forceRedraw();
         }
     }
-    
     /**
      * Инициализация компонентов
      */
@@ -1134,16 +1091,24 @@ class PixelBattleApp {
 // Инициализация приложения при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Получаем конфигурацию из глобальной переменной CONFIG
+        // Ждем полной загрузки всех ресурсов
+        if (document.readyState !== 'complete') {
+            await new Promise(resolve => window.addEventListener('load', resolve));
+        }
+        
+        // Дополнительная задержка
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Получаем конфигурацию
         if (typeof CONFIG === 'undefined') {
-            throw new Error('CONFIG not found. Make sure config is loaded.');
+            throw new Error('CONFIG not found');
         }
         
         console.log('🚀 Starting Pixel Battle App...');
         
         // Создаем экземпляр приложения
         window.pixelBattleApp = new PixelBattleApp(CONFIG);
-        
+
         // Инициализируем приложение
         await window.pixelBattleApp.initialize();
         
