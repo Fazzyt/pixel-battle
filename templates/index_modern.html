@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="pixel-battle 2.0 - Современная битва за каждый пиксель с экстремальной производительностью">
+    <title>pixel-battle 2.0 - Модульная архитектура</title>
+    
+    <!-- Preload критически важных ресурсов -->
+    <link rel="modulepreload" href="static/js/app.js">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="static/css/modern.css">
+    
+    <!-- PWA манифест (пока отключен) -->
+    <!-- <link rel="manifest" href="static/manifest.json"> -->
+    <meta name="theme-color" content="#2196F3">
+    
+    <!-- Иконки (пока отключены) -->
+    <!-- <link rel="apple-touch-icon" href="static/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="static/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="static/icons/favicon-16x16.png"> -->
+    
+    <!-- Fallback для старых браузеров -->
+    <noscript>
+        <style>
+            .js-only { display: none !important; }
+            .no-js-fallback { display: block !important; }
+        </style>
+    </noscript>
+</head>
+<body oncontextmenu="return false;" class="loading">
+    
+    <!-- Прелоадер -->
+    <div id="app-loader" class="app-loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <h2>pixel-battle 2.0</h2>
+            <p>Загрузка модульной архитектуры...</p>
+            <div class="loader-progress">
+                <div class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fallback для браузеров без JS -->
+    <div class="no-js-fallback" style="display: none;">
+        <div class="error-container">
+            <h1>JavaScript Required</h1>
+            <p>pixel-battle 2.0 требует включенный JavaScript для работы.</p>
+            <p>Пожалуйста, включите JavaScript в настройках браузера.</p>
+        </div>
+    </div>
+    
+    <!-- Главный контейнер приложения -->
+    <div id="app" class="app js-only" style="display: none;">
+        
+        <!-- Контейнер холста -->
+        <div id="canvas-container" class="canvas-container">
+            <canvas id="canvas" class="main-canvas"></canvas>
+            
+            <!-- Оверлеи холста -->
+            <div class="canvas-overlays">
+                <!-- Курсор координат -->
+                <div id="cursor-info" class="cursor-info"></div>
+            </div>
+        </div>
+        
+        <!-- Верхняя панель информации -->
+        <div class="top-bar">
+            <div class="info-panel">
+                <div id="online-counter" class="info-item">
+                    <span class="info-icon">👥</span>
+                    <span class="info-text">Online: 0</span>
+                </div>
+                
+                <div id="coordinates" class="info-item">
+                    <span class="info-icon">📍</span>
+                    <span class="info-text">Координаты:</span>
+                </div>
+                
+                <div id="connection-status" class="info-item">
+                    <span class="info-icon status-indicator" data-status="disconnected">🔴</span>
+                    <span class="info-text">Подключение...</span>
+                </div>
+            </div>
+            
+            <!-- Кнопки управления -->
+            <div class="control-buttons">
+                <button id="toggle-sidebar" class="control-btn" title="Сайдбар (B)">
+                    <span>📋</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Боковая панель управления -->
+        <div class="side-panel">
+            <!-- Палитра цветов -->
+            <div class="color-palette-container">
+                <h3 class="panel-title">Цвета</h3>
+                <div class="color-palette" id="color-palette">
+                    {% for color in colors %}
+                    <div class="color-option" 
+                         data-color="{{ color }}" 
+                         style="background-color: {{ color }}"
+                         title="{{ color }}"
+                         tabindex="0">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Информация о выбранном пикселе -->
+            <div class="pixel-info-container">
+                <h3 class="panel-title">Выбранный пиксель</h3>
+                <div id="pixel-info" class="pixel-info">
+                    <p class="pixel-coords">Не выбран</p>
+                    <div class="pixel-preview"></div>
+                </div>
+            </div>
+            
+            <!-- Кнопка подтверждения -->
+            <div class="action-container">
+                <button id="confirm-pixel" class="confirm-btn" disabled>
+                    <span class="btn-icon">✨</span>
+                    <span class="btn-text">Подтвердить</span>
+                </button>
+                
+                <button id="center-canvas-sidebar" class="center-btn" title="Центрировать поле (Space)">
+                    <span class="btn-icon">🎯</span>
+                    <span class="btn-text">Центрировать</span>
+                </button>
+            </div>
+            
+            <!-- Cooldown информация -->
+            <div class="cooldown-container">
+                <div id="cooldown" class="cooldown-info">
+                    Следующий пиксель через: 0 секунд.
+                </div>
+                <div class="cooldown-progress">
+                    <div id="cooldown-progress-bar" class="cooldown-progress-bar"></div>
+                </div>
+            </div>
+            
+            <!-- Панель горячих клавиш -->
+            <div class="hotkeys-panel">
+                <h3 class="panel-title">Горячие клавиши</h3>
+                <div class="hotkeys-list">
+                    <div class="hotkey-item">
+                        <kbd>B</kbd> <span>Сайдбар</span>
+                    </div>
+                    <div class="hotkey-item">
+                        <kbd>Space</kbd> <span>Центр</span>
+                    </div>
+                    <div class="hotkey-item">
+                        <kbd>+/-</kbd> <span>Зум</span>
+                    </div>
+                    <div class="hotkey-item">
+                        <kbd>Стрелки</kbd> <span>Движение</span>
+                    </div>
+                    <div class="hotkey-item">
+                        <kbd>Enter</kbd> <span>Подтвердить</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Мобильная панель управления -->
+        <div class="mobile-controls" id="mobile-controls">
+            <button id="mobile-toggle" class="mobile-toggle">
+                <span>⚙️</span>
+            </button>
+            <div class="mobile-panel" id="mobile-panel" style="display: none;">
+                <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-primary);">Управление</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button onclick="window.pixelBattleApp?.centerCanvas()" style="padding: 8px 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🎯 Центрировать
+                    </button>
+                    
+                    <button onclick="window.pixelBattleApp?.toggleSidebar()" style="padding: 8px 12px; background: var(--surface-dark); color: var(--text-primary); border: 1px solid var(--divider); border-radius: 4px; cursor: pointer;">
+                        📋 Сайдбар
+                    </button>
+                    
+                    <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 8px;">
+                        <div>Space - Центр</div>
+                        <div>B - Сайдбар</div>
+                        <div>Стрелки - Движение</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контекстное меню (скрыто по умолчанию) -->
+        <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="context-menu-item" data-action="place-pixel">
+                Поставить пиксель
+            </div>
+            <div class="context-menu-item" data-action="get-info">
+                Информация о пикселе
+            </div>
+            <div class="context-menu-separator"></div>
+            <div class="context-menu-item" data-action="center-here">
+                Центрировать здесь
+            </div>
+        </div>
+    </div>
+    
+    <!-- Конфигурация приложения -->
+    <script>
+        // Глобальная конфигурация для модулей
+        window.CONFIG = {
+            CANVAS_WIDTH: {{ canvas_width }},
+            CANVAS_HEIGHT: {{ canvas_height }},
+            PIXEL_SIZE: {{ pixel_size }},
+            COOLDOWN_TIME: {{ cooldown_time }},
+            MIN_SCALE: 0.1,
+            MAX_SCALE: 20,
+            DEFAULT_COLOR: '{{ colors[0] if colors else "#000000" }}',
+            COLORS: {{ colors | tojson }},
+            VERSION: '2.0.0',
+            BUILD: '{{ build_timestamp | default("dev") }}',
+            DEBUG: {{ 'true' if debug else 'false' }}
+        };
+        
+        // Прогресс загрузки (упрощенная версия)
+        let loaderHidden = false;
+        window.loadingProgress = {
+            total: 7,
+            loaded: 0,
+            update: function() {
+                this.loaded++;
+                const percent = (this.loaded / this.total) * 100;
+                const progressBar = document.querySelector('.loader-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = percent + '%';
+                }
+                
+                if (this.loaded >= this.total && !loaderHidden) {
+                    this.hideLoader();
+                }
+            },
+            hideLoader: function() {
+                if (loaderHidden) return;
+                loaderHidden = true;
+                
+                console.log('🔄 Hiding loader...');
+                
+                const loader = document.getElementById('app-loader');
+                const app = document.getElementById('app');
+                
+                if (loader) {
+                    loader.style.display = 'none';
+                    console.log('✅ Loader hidden');
+                }
+                
+                if (app) {
+                    app.style.display = 'block';
+                    document.body.classList.remove('loading');
+                    console.log('✅ App shown');
+                }
+            }
+        };
+        
+        // Принудительно скрываем loader через 3 секунды если он еще виден
+        setTimeout(() => {
+            if (!loaderHidden) {
+                console.log('⏰ Force hiding loader after timeout');
+                window.loadingProgress.hideLoader();
+            }
+        }, 3000);
+        
+        // Проверка поддержки современных возможностей
+        window.featureSupport = {
+            modules: 'noModule' in HTMLScriptElement.prototype,
+            webgl: !!window.WebGLRenderingContext,
+            websockets: 'WebSocket' in window,
+            canvas: !!document.createElement('canvas').getContext,
+            es6: (function() {
+                try {
+                    new Function('(a = 0) => a');
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            })()
+        };
+        
+        // Проверяем поддержку критически важных возможностей
+        if (!window.featureSupport.modules || !window.featureSupport.websockets || !window.featureSupport.canvas) {
+            document.querySelector('.no-js-fallback').style.display = 'block';
+            document.querySelector('.no-js-fallback h1').textContent = 'Браузер не поддерживается';
+            document.querySelector('.no-js-fallback p').textContent = 'Ваш браузер не поддерживает современные веб-технологии, необходимые для работы pixel-battle 2.0.';
+            document.getElementById('app-loader').style.display = 'none';
+        }
+    </script>
+    
+    <!-- Стили для loader и базовой разметки -->
+    <style>
+        .app-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .loader-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 40px;
+        }
+        
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        .loader-content h2 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .loader-content p {
+            margin: 0 0 30px;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .loader-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loader-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        .error-container h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        /* Скрываем app по умолчанию для плавной загрузки */
+        .app {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        body:not(.loading) .app {
+            opacity: 1;
+        }
+    </style>
+    
+    <!-- Дополнительная конфигурация (если нужна) -->
+    <script>
+        // Дополнительные настройки, которые не передаются с сервера
+        if (window.CONFIG) {
+            // Добавляем дополнительные параметры к существующей конфигурации
+            Object.assign(window.CONFIG, {
+                MIN_SCALE: 0.1,
+                MAX_SCALE: 20,
+                VERSION: '2.0.0',
+                DEBUG: false
+            });
+        }
+    </script>
+    
+    <!-- Основной модуль приложения -->
+    <script type="module" src="static/js/app.js"></script>
+    
+    <!-- Service Worker для PWA (пока отключен) -->
+    <!--
+    <script>
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('SW registered:', reg))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+    </script>
+    -->
+</body>
+</html>

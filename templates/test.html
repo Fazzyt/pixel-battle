@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>pixel-battle Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        #canvas { border: 1px solid #ccc; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>pixel-battle 2.0 - Diagnostic Test</h1>
+    
+    <div id="status">
+        <div class="status">🔄 Checking browser compatibility...</div>
+    </div>
+    
+    <h2>Configuration</h2>
+    <pre id="config">Loading...</pre>
+    
+    <h2>Canvas Test</h2>
+    <canvas id="canvas" width="800" height="400"></canvas>
+    
+    <h2>Controls Test</h2>
+    <button id="test-btn">Test Button</button>
+    <div id="result"></div>
+    
+    <script>
+        // Глобальная конфигурация для тестирования
+        window.CONFIG = {
+            CANVAS_WIDTH: {{ canvas_width }},
+            CANVAS_HEIGHT: {{ canvas_height }},
+            PIXEL_SIZE: {{ pixel_size }},
+            COOLDOWN_TIME: {{ cooldown_time }},
+            MIN_SCALE: 0.1,
+            MAX_SCALE: 20,
+            DEFAULT_COLOR: '{{ colors[0] if colors else "#000000" }}',
+            COLORS: {{ colors | tojson }},
+            VERSION: '2.0.0',
+            BUILD: '{{ build_timestamp | default("dev") }}',
+            DEBUG: {{ 'true' if debug else 'false' }}
+        };
+        
+        console.log('🚀 Test page loaded');
+        
+        const statusDiv = document.getElementById('status');
+        const configDiv = document.getElementById('config');
+        const canvas = document.getElementById('canvas');
+        const testBtn = document.getElementById('test-btn');
+        const resultDiv = document.getElementById('result');
+        
+        function addStatus(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            statusDiv.appendChild(div);
+        }
+        
+        // Проверяем CONFIG
+        if (typeof CONFIG !== 'undefined') {
+            addStatus('✅ CONFIG found');
+            configDiv.textContent = JSON.stringify(CONFIG, null, 2);
+        } else {
+            addStatus('❌ CONFIG not found', 'error');
+            configDiv.textContent = 'CONFIG variable not defined';
+        }
+        
+        // Проверяем поддержку браузера
+        const features = {
+            'ES6 Modules': 'noModule' in HTMLScriptElement.prototype,
+            'WebSocket': 'WebSocket' in window,
+            'Canvas': !!document.createElement('canvas').getContext,
+            'LocalStorage': 'localStorage' in window,
+            'Fetch API': 'fetch' in window
+        };
+        
+        for (const [feature, supported] of Object.entries(features)) {
+            addStatus(`${supported ? '✅' : '❌'} ${feature}`, supported ? 'success' : 'error');
+        }
+        
+        // Тестируем canvas
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#333';
+        ctx.font = '24px Arial';
+        ctx.fillText('Canvas Test - SUCCESS!', 20, 50);
+        
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(20, 80, 100, 50);
+        
+        ctx.fillStyle = '#F44336';
+        ctx.fillRect(140, 80, 100, 50);
+        
+        ctx.fillStyle = '#2196F3';
+        ctx.fillRect(260, 80, 100, 50);
+        
+        addStatus('✅ Canvas initialized successfully');
+        
+        // Тестируем кнопку
+        testBtn.addEventListener('click', () => {
+            resultDiv.innerHTML = '<div class="status success">✅ Button click works!</div>';
+            console.log('✅ Button clicked');
+        });
+        
+        // Тестируем WebSocket подключение
+        try {
+            const ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                addStatus('✅ WebSocket connected successfully');
+                resultDiv.innerHTML += '<div class="status success">✅ WebSocket connection established</div>';
+            };
+            
+            ws.onerror = (error) => {
+                addStatus('❌ WebSocket connection failed', 'error');
+                resultDiv.innerHTML += '<div class="status error">❌ WebSocket error</div>';
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    addStatus(`📨 WebSocket message: ${message.type}`);
+                } catch (e) {
+                    addStatus('❌ Invalid WebSocket message format', 'error');
+                }
+            };
+            
+        } catch (error) {
+            addStatus('❌ WebSocket not supported', 'error');
+        }
+        
+        console.log('🎉 Test page initialization completed');
+    </script>
+</body>
+</html>

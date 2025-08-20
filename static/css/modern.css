@@ -1,0 +1,755 @@
+/**
+ * Современные стили для pixel-battle 2.0
+ * Модульная архитектура с улучшенным UX
+ */
+
+/* CSS Custom Properties для темизации */
+:root {
+    /* Основные цвета */
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --primary-light: #BBDEFB;
+    --secondary-color: #4CAF50;
+    --accent-color: #FF9800;
+    --error-color: #F44336;
+    --warning-color: #FFC107;
+    --success-color: #4CAF50;
+    
+    /* Нейтральные цвета */
+    --background-color: #FAFAFA;
+    --surface-color: #FFFFFF;
+    --surface-dark: #F5F5F5;
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --text-hint: #9E9E9E;
+    --divider: #E0E0E0;
+    
+    /* Тени */
+    --shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    --shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    --shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    --shadow-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    --shadow-5: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    
+    /* Радиусы */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Переходы */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Размеры */
+    --header-height: 60px;
+    --sidebar-width: 300px;
+    --sidebar-collapsed-width: 60px;
+    
+    /* Z-index */
+    --z-tooltip: 1000;
+    --z-modal: 1500;
+    --z-dropdown: 2000;
+    --z-notification: 3000;
+    --z-loader: 10000;
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #121212;
+        --surface-color: #1E1E1E;
+        --surface-dark: #2D2D2D;
+        --text-primary: #FFFFFF;
+        --text-secondary: #AAAAAA;
+        --text-hint: #666666;
+        --divider: #333333;
+    }
+}
+
+/* Глобальные стили */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow: hidden; /* Предотвращаем скролл */
+    user-select: none; /* Предотвращаем выделение текста при перетаскивании */
+}
+
+/* Основная структура приложения */
+.app {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
+
+.canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-color);
+    margin-top: var(--header-height);
+    margin-right: var(--sidebar-width);
+    transition: margin-right var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--header-height));
+    width: 100%;
+    height: calc(100vh - var(--header-height));
+    box-sizing: border-box;
+}
+
+.main-canvas {
+    display: block;
+    cursor: crosshair;
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* Отключаем стандартные touch жесты */
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    max-height: none;
+}
+
+/* Верхняя панель */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: var(--sidebar-width);
+    height: var(--header-height);
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+    box-shadow: var(--shadow-1);
+    transition: right var(--transition-normal);
+}
+
+.info-panel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.info-icon {
+    font-size: 16px;
+}
+
+.status-indicator[data-status="connected"] {
+    color: var(--success-color);
+}
+
+.status-indicator[data-status="disconnected"] {
+    color: var(--error-color);
+}
+
+.status-indicator[data-status="connecting"] {
+    color: var(--warning-color);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.control-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.control-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--surface-dark);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.control-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+.control-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Боковая панель */
+.side-panel {
+    width: var(--sidebar-width) !important;
+    background: var(--surface-color) !important;
+    border-left: 1px solid var(--divider) !important;
+    padding: var(--header-height) 0 0 0 !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    flex-shrink: 0 !important;
+    position: fixed !important;
+    right: 0 !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    box-shadow: var(--shadow-2) !important;
+    transition: transform var(--transition-normal) !important;
+    transform: translateX(0) !important;
+}
+
+.side-panel.hidden {
+    transform: translateX(100%) !important;
+}
+
+.side-panel.hidden + .canvas-container {
+    margin-right: 0 !important;
+}
+
+.side-panel.hidden ~ .top-bar {
+    right: 0 !important;
+}
+
+.panel-title {
+    margin: 0 0 16px 0;
+    padding: 0 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Палитра цветов */
+.color-palette-container {
+    padding: 20px;
+    border-bottom: 1px solid var(--divider);
+}
+
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 8px;
+}
+
+.color-option {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-2);
+}
+
+.color-option:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.color-option.selected {
+    border-color: var(--primary-color);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-3);
+}
+
+.color-option::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+.color-option.selected::after {
+    opacity: 1;
+}
+
+/* Информация о пикселе */
+.pixel-info-container {
+    padding: 20px;
+    border-bottom: 1px solid var(--divider);
+}
+
+.pixel-info {
+    background: var(--surface-dark);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.pixel-coords {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.pixel-preview {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-sm);
+    margin: 0 auto;
+    border: 2px solid var(--divider);
+    background: #FFFFFF;
+}
+
+/* Кнопка подтверждения */
+.action-container {
+    padding: 20px;
+    border-bottom: 1px solid var(--divider);
+}
+
+.confirm-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.confirm-btn:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
+}
+
+.confirm-btn:disabled {
+    background: var(--text-hint);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Кнопка центрирования */
+.center-btn {
+    width: 100%;
+    padding: 8px 16px;
+    background: var(--surface-dark);
+    color: var(--text-primary);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.center-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* Cooldown */
+.cooldown-container {
+    padding: 20px;
+    border-bottom: 1px solid var(--divider);
+}
+
+.cooldown-info {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.cooldown-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--surface-dark);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.cooldown-progress-bar {
+    height: 100%;
+    background: var(--warning-color);
+    width: 0%;
+    transition: width 0.1s linear;
+    border-radius: 2px;
+}
+
+/* Горячие клавиши */
+.hotkeys-panel {
+    padding: 20px;
+    flex: 1;
+}
+
+.hotkeys-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hotkey-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+kbd {
+    background: var(--surface-dark);
+    border: 1px solid var(--divider);
+    border-radius: 3px;
+    box-shadow: 0 1px 0 var(--divider);
+    color: var(--text-primary);
+    display: inline-block;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
+    min-width: 24px;
+    padding: 4px 6px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+/* Мобильные элементы управления */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.mobile-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: var(--shadow-3);
+    transition: all var(--transition-fast);
+}
+
+.mobile-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-4);
+}
+
+.mobile-panel {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: var(--surface-color);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-3);
+    padding: 16px;
+    min-width: 200px;
+    max-width: 300px;
+    z-index: 999;
+}
+
+/* Показываем мобильные элементы только на мобильных устройствах */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: block !important;
+    }
+    
+    /* Скрываем обычный сайдбар на мобильных */
+    .side-panel {
+        display: none !important;
+    }
+    
+    /* Адаптируем канвас для мобильных */
+    .canvas-container {
+        margin-right: 0 !important;
+    }
+    
+    .top-bar {
+        right: 0 !important;
+    }
+}
+
+/* Показываем мобильные элементы на всех устройствах для тестирования */
+.mobile-controls {
+    display: block !important;
+}
+
+/* Контекстное меню */
+.context-menu {
+    position: fixed;
+    background: var(--surface-color);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-3);
+    padding: 8px 0;
+    min-width: 160px;
+    z-index: var(--z-dropdown);
+}
+
+.context-menu-item {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.context-menu-item:hover {
+    background: var(--surface-dark);
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: var(--divider);
+    margin: 8px 0;
+}
+
+/* Оверлеи холста */
+.canvas-overlays {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.cursor-info {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: monospace;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 100;
+}
+
+.cursor-info.visible {
+    opacity: 1;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .side-panel {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        z-index: 1000;
+        transition: right var(--transition-normal);
+        box-shadow: var(--shadow-4);
+        display: none !important;
+    }
+    
+    .side-panel.open {
+        right: 0;
+    }
+    
+    .top-bar {
+        right: 0;
+    }
+    
+    .mobile-controls {
+        display: block;
+    }
+    
+    .control-buttons {
+        display: none;
+    }
+    
+    .info-panel {
+        gap: 12px;
+    }
+    
+    .info-item {
+        font-size: 12px;
+    }
+    
+    .info-text {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        padding: 0 12px;
+        height: 50px;
+    }
+    
+    :root {
+        --header-height: 50px;
+    }
+    
+    .info-panel {
+        gap: 8px;
+    }
+    
+    .info-icon {
+        font-size: 14px;
+    }
+}
+
+/* Высококонтрастная тема */
+@media (prefers-contrast: high) {
+    :root {
+        --shadow-1: 0 0 0 1px var(--divider);
+        --shadow-2: 0 0 0 2px var(--divider);
+        --shadow-3: 0 0 0 3px var(--divider);
+    }
+    
+    .color-option {
+        border: 2px solid var(--divider);
+    }
+    
+    .control-btn, .confirm-btn {
+        border: 1px solid var(--divider);
+    }
+}
+
+/* Анимации для улучшения UX */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.notification-container .notification {
+    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Улучшения доступности */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Фокус для клавиатурной навигации */
+*:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Анимация загрузки приложения */
+.app {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Печать */
+@media print {
+    .side-panel, .top-bar, .mobile-controls {
+        display: none;
+    }
+    
+    .canvas-container {
+        margin: 0;
+    }
+}
+
+/* Стили для мобильного сайдбара */
+@media (max-width: 768px) {
+    .side-panel {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 300px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        transform: translateX(100%) !important;
+        transition: transform var(--transition-normal) !important;
+        background: var(--surface-color) !important;
+        border-left: 1px solid var(--divider) !important;
+        box-shadow: var(--shadow-3) !important;
+    }
+    
+    .side-panel:not(.hidden) {
+        transform: translateX(0) !important;
+        display: flex !important;
+    }
+    
+    .side-panel.hidden {
+        transform: translateX(100%) !important;
+        display: none !important;
+    }
+}
