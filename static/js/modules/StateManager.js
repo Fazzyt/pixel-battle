@@ -206,16 +206,10 @@ export class StateManager {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
         
-        // Вычисляем доступную область для канваса
-        let availableWidth = windowWidth;
-        let availableHeight = windowHeight - headerHeight;
-        
-        // На десктопе учитываем сайдбар
-        if (window.innerWidth > 768) {
-            availableWidth = windowWidth - sidebarWidth;
-        }
+        // Вычисляем доступную область для канваса (теперь на весь экран)
+        const availableWidth = windowWidth;
+        const availableHeight = windowHeight - headerHeight;
         
         // Устанавливаем начальные позиции для центрирования
         this.set('canvas.scale', 1);
@@ -226,7 +220,6 @@ export class StateManager {
             windowSize: { width: windowWidth, height: windowHeight },
             availableArea: { width: availableWidth, height: availableHeight },
             headerHeight,
-            sidebarWidth,
             initialOffsets: { x: 0, y: headerHeight }
         });
     }

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="pixel-battle 2.0 - Современная битва за каждый пиксель с экстремальной производительностью">
-    <title>pixel-battle 2.0 - Модульная архитектура</title>
+    <meta name="description" content="pixel-battle - Современная битва за каждый пиксель">
+    <title>pixel-battle</title>
     
     <!-- Preload критически важных ресурсов -->
     <link rel="modulepreload" href="static/js/app.js">
@@ -36,8 +36,9 @@
     <div id="app-loader" class="app-loader">
         <div class="loader-content">
             <div class="loader-spinner"></div>
-            <h2>pixel-battle 2.0</h2>
-            <p>Загрузка модульной архитектуры...</p>
+            <h2>pixel-battle</h2>
+            <p>by fazzyt</p>
+            <p>Загрузка хренового фронтенда...</p>
             <div class="loader-progress">
                 <div class="loader-progress-bar"></div>
             </div>
@@ -48,7 +49,7 @@
     <div class="no-js-fallback" style="display: none;">
         <div class="error-container">
             <h1>JavaScript Required</h1>
-            <p>pixel-battle 2.0 требует включенный JavaScript для работы.</p>
+            <p>pixel-battle требует включенный JavaScript для работы.</p>
             <p>Пожалуйста, включите JavaScript в настройках браузера.</p>
         </div>
     </div>
@@ -88,20 +89,19 @@
             
             <!-- Кнопки управления -->
             <div class="control-buttons">
-                <button id="toggle-sidebar" class="control-btn" title="Сайдбар (B)">
-                    <span>📋</span>
+                <button id="toggle-bottom-panel" class="control-btn" title="Панель управления (B)">
+                    <span>⚙️</span>
                 </button>
             </div>
         </div>
         
-        <!-- Боковая панель управления -->
-        <div class="side-panel">
-            <!-- Палитра цветов -->
-            <div class="color-palette-container">
-                <h3 class="panel-title">Цвета</h3>
-                <div class="color-palette" id="color-palette">
+        <!-- Нижняя панель управления -->
+        <div class="bottom-panel" id="bottom-panel">
+            <div class="bottom-panel-left">
+                <!-- Палитра цветов -->
+                <div class="bottom-color-palette" id="bottom-color-palette">
                     {% for color in colors %}
-                    <div class="color-option" 
+                    <div class="bottom-color-option" 
                          data-color="{{ color }}" 
                          style="background-color: {{ color }}"
                          title="{{ color }}"
@@ -109,62 +109,35 @@
                     </div>
                     {% endfor %}
                 </div>
-            </div>
-            
-            <!-- Информация о выбранном пикселе -->
-            <div class="pixel-info-container">
-                <h3 class="panel-title">Выбранный пиксель</h3>
-                <div id="pixel-info" class="pixel-info">
-                    <p class="pixel-coords">Не выбран</p>
-                    <div class="pixel-preview"></div>
-                </div>
-            </div>
-            
-            <!-- Кнопка подтверждения -->
-            <div class="action-container">
-                <button id="confirm-pixel" class="confirm-btn" disabled>
-                    <span class="btn-icon">✨</span>
-                    <span class="btn-text">Подтвердить</span>
-                </button>
                 
-                <button id="center-canvas-sidebar" class="center-btn" title="Центрировать поле (Space)">
-                    <span class="btn-icon">🎯</span>
-                    <span class="btn-text">Центрировать</span>
+                <!-- Информация о выбранном пикселе -->
+                <div class="bottom-pixel-info" id="bottom-pixel-info">
+                    <span>Не выбран</span>
+                    <div class="bottom-pixel-preview" id="bottom-pixel-preview"></div>
+                </div>
+                
+                <!-- Cooldown информация -->
+                <div class="bottom-cooldown" id="bottom-cooldown">
+                    <span>0с</span>
+                    <div class="bottom-cooldown-progress">
+                        <div id="bottom-cooldown-progress-bar" class="bottom-cooldown-progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-panel-right">
+                <!-- Кнопка подтверждения -->
+                <button id="bottom-confirm-pixel" class="bottom-confirm-btn" disabled>
+                    <span>✨</span>
+                    <span>Подтвердить</span>
                 </button>
-            </div>
-            
-            <!-- Cooldown информация -->
-            <div class="cooldown-container">
-                <div id="cooldown" class="cooldown-info">
-                    Следующий пиксель через: 0 секунд.
-                </div>
-                <div class="cooldown-progress">
-                    <div id="cooldown-progress-bar" class="cooldown-progress-bar"></div>
-                </div>
-            </div>
-            
-            <!-- Панель горячих клавиш -->
-            <div class="hotkeys-panel">
-                <h3 class="panel-title">Горячие клавиши</h3>
-                <div class="hotkeys-list">
-                    <div class="hotkey-item">
-                        <kbd>B</kbd> <span>Сайдбар</span>
-                    </div>
-                    <div class="hotkey-item">
-                        <kbd>Space</kbd> <span>Центр</span>
-                    </div>
-                    <div class="hotkey-item">
-                        <kbd>+/-</kbd> <span>Зум</span>
-                    </div>
-                    <div class="hotkey-item">
-                        <kbd>Стрелки</kbd> <span>Движение</span>
-                    </div>
-                    <div class="hotkey-item">
-                        <kbd>Enter</kbd> <span>Подтвердить</span>
-                    </div>
-                </div>
             </div>
         </div>
+        
+        <!-- Плавающая кнопка размещения пикселя -->
+        <button id="floating-place-button" class="floating-place-button" title="Разместить пиксель" style="display: none;">
+            <span>🎨</span>
+        </button>
         
         <!-- Мобильная панель управления -->
         <div class="mobile-controls" id="mobile-controls">

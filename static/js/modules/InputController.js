@@ -48,6 +48,21 @@ export class InputController {
         
         this.setupEventListeners();
         this.setupKeyboardShortcuts();
+        
+        // Синхронизируем размеры контейнера при инициализации
+        setTimeout(() => {
+            this.syncContainerSize();
+        }, 100);
+        
+        // Экспортируем методы для отладки в глобальную область
+        if (typeof window !== 'undefined') {
+            if (!window.debugInput) {
+                window.debugInput = {};
+            }
+            window.debugInput.syncContainer = () => this.syncContainerSize();
+            window.debugInput.centerCanvas = () => this.centerCanvas();
+            console.log('🔧 InputController debug methods exported to window.debugInput');
+        }
     }
     
     /**
@@ -319,7 +334,7 @@ export class InputController {
         
         // Получаем высоту верхней панели и ширину сайдбара
         const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+
         
         // Получаем размеры окна браузера
         const windowWidth = window.innerWidth;
@@ -329,10 +344,7 @@ export class InputController {
         let availableWidth = windowWidth;
         let availableHeight = windowHeight - headerHeight;
         
-        // На десктопе учитываем сайдбар
-        if (window.innerWidth > 768) {
-            availableWidth = windowWidth - sidebarWidth;
-        }
+        // Сайдбар убран, используем всю ширину окна
         
         // Получаем размеры контейнера канваса
         const canvasContainer = document.querySelector('.canvas-container');
@@ -451,7 +463,7 @@ export class InputController {
             
             // Получаем высоту верхней панели и ширину сайдбара
             const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-            const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+    
             
             // Получаем размеры окна браузера
             const windowWidth = window.innerWidth;
@@ -463,7 +475,7 @@ export class InputController {
             
             // На десктопе учитываем сайдбар
             if (window.innerWidth > 768) {
-                availableWidth = windowWidth - sidebarWidth;
+                availableWidth = windowWidth;
             }
             
             // Получаем размеры контейнера канваса
@@ -563,7 +575,7 @@ export class InputController {
             
             // Получаем высоту верхней панели и ширину сайдбара
             const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-            const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+    
             
             // Получаем размеры окна браузера
             const windowWidth = window.innerWidth;
@@ -575,7 +587,7 @@ export class InputController {
             
             // На десктопе учитываем сайдбар
             if (window.innerWidth > 768) {
-                availableWidth = windowWidth - sidebarWidth;
+                availableWidth = windowWidth;
             }
             
             // Получаем размеры контейнера канваса
@@ -626,51 +638,58 @@ export class InputController {
     }
     
     /**
-     * Переключение видимости сайдбара
+     * Переключение видимости нижней панели
      */
-    toggleSidebar() {
-        const sidePanel = document.querySelector('.side-panel');
-        const canvasContainer = document.querySelector('.canvas-container');
-        const topBar = document.querySelector('.top-bar');
+    toggleBottomPanel() {
+        const bottomPanel = document.getElementById('bottom-panel');
         
-        if (sidePanel) {
-            const isHidden = sidePanel.classList.contains('hidden');
+        if (bottomPanel) {
+            const isHidden = bottomPanel.classList.contains('hidden');
             
             if (isHidden) {
-                // Показываем сайдбар
-                sidePanel.classList.remove('hidden');
-                if (canvasContainer) canvasContainer.style.marginRight = 'var(--sidebar-width)';
-                if (topBar) topBar.style.right = 'var(--sidebar-width)';
-                console.log('📋 InputController: Sidebar shown');
+                // Показываем нижнюю панель
+                bottomPanel.classList.remove('hidden');
+                console.log('⚙️ InputController: Bottom panel shown');
             } else {
-                // Скрываем сайдбар
-                sidePanel.classList.add('hidden');
-                if (canvasContainer) canvasContainer.style.marginRight = '0';
-                if (topBar) topBar.style.right = '0';
-                console.log('📋 InputController: Sidebar hidden');
+                // Скрываем нижнюю панель
+                bottomPanel.classList.add('hidden');
+                console.log('⚙️ InputController: Bottom panel hidden');
             }
-            
-            // Перецентрируем канвас после изменения размеров
-            setTimeout(() => {
-                // Принудительно устанавливаем новые размеры контейнера
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-                const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-                const sidebarWidth = isHidden ? 300 : 0;
-                
-                const availableWidth = window.innerWidth > 768 ? windowWidth - sidebarWidth : windowWidth;
-                const availableHeight = windowHeight - headerHeight;
-                
-                // Принудительно устанавливаем новые размеры
-                canvasContainer.style.width = availableWidth + 'px';
-                canvasContainer.style.height = availableHeight + 'px';
-                
-                this.centerCanvas();
-                console.log('🎯 InputController: Canvas recentered after sidebar toggle');
-            }, 300);
         }
     }
     
+    /**
+     * Синхронизация размеров контейнера с основным приложением
+     */
+    syncContainerSize() {
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (!canvasContainer) {
+            console.log('⚠️ InputController: Canvas container not found for sync');
+            return;
+        }
+        
+        const currentWidth = parseInt(canvasContainer.style.width) || 0;
+        const currentHeight = parseInt(canvasContainer.style.height) || 0;
+        
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
+
+        
+        const availableWidth = windowWidth;
+        const availableHeight = windowHeight - headerHeight;
+        
+        // Синхронизируем размеры только если они отличаются
+        if (Math.abs(currentWidth - availableWidth) > 5 || Math.abs(currentHeight - availableHeight) > 5) {
+            canvasContainer.style.width = availableWidth + 'px';
+            canvasContainer.style.height = availableHeight + 'px';
+            console.log('🔄 InputController: Container size synced:', { 
+                old: { width: currentWidth, height: currentHeight },
+                new: { width: availableWidth, height: availableHeight }
+            });
+        }
+    }
+
     /**
      * Центрирование холста
      */
@@ -684,7 +703,7 @@ export class InputController {
         
         // Получаем высоту верхней панели и ширину сайдбара
         const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+
         
         // Получаем размеры окна браузера
         const windowWidth = window.innerWidth;
@@ -694,14 +713,17 @@ export class InputController {
         let availableWidth = windowWidth;
         let availableHeight = windowHeight - headerHeight;
         
-        // На десктопе учитываем сайдбар
-        if (window.innerWidth > 768) {
-            availableWidth = windowWidth - sidebarWidth;
-        }
+        // Сайдбар убран, используем всю ширину окна
         
         // Получаем размеры контейнера канваса
         const canvasContainer = document.querySelector('.canvas-container');
         const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : { width: 0, height: 0 };
+        
+        // Проверяем, что размеры контейнера корректны
+        if (containerRect.width <= 0 || containerRect.height <= 0) {
+            console.log('⚠️ InputController: Invalid container size detected, skipping centering...');
+            return;
+        }
         
         // Используем размеры контейнера если они доступны, иначе доступную область
         const finalWidth = containerRect.width > 0 ? containerRect.width : availableWidth;
@@ -736,7 +758,7 @@ export class InputController {
             logicalCanvas: { width: logicalCanvasWidth, height: logicalCanvasHeight },
             scale: scale,
             headerHeight: headerHeight,
-            sidebarWidth: sidebarWidth,
+            sidebarRemoved: true,
             isMobile: window.innerWidth <= 768,
             center: { x: newOffsetX, y: newOffsetY },
             config: {
@@ -761,7 +783,7 @@ export class InputController {
      */
     setupKeyboardShortcuts() {
         this.shortcuts = {
-            'KeyB': () => this.toggleSidebar(),
+            'KeyB': () => this.toggleBottomPanel(),
             'Space': () => this.centerCanvas(),
             'Equal': () => this.zoomAtCenter(1.2),
             'Minus': () => this.zoomAtCenter(0.8),
@@ -820,7 +842,7 @@ export class InputController {
         
         // Получаем высоту верхней панели и ширину сайдбара
         const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-        const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
+
         
         // Получаем размеры окна браузера
         const windowWidth = window.innerWidth;
@@ -830,10 +852,7 @@ export class InputController {
         let availableWidth = windowWidth;
         let availableHeight = windowHeight - headerHeight;
         
-        // На десктопе учитываем сайдбар
-        if (window.innerWidth > 768) {
-            availableWidth = windowWidth - sidebarWidth;
-        }
+        // Сайдбар убран, используем всю ширину окна
         
         // Получаем размеры контейнера канваса
         const canvasContainer = document.querySelector('.canvas-container');
@@ -957,21 +976,8 @@ export class InputController {
     handleWindowResize() {
         // Пересчитываем центрирование при изменении размеров окна
         if (appState.get('canvas.scale') === 1) {
-            // Принудительно устанавливаем новые размеры контейнера
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            const headerHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 60;
-            const sidebarWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width')) || 300;
-            
-            const availableWidth = window.innerWidth > 768 ? windowWidth - sidebarWidth : windowWidth;
-            const availableHeight = windowHeight - headerHeight;
-            
-            // Принудительно устанавливаем новые размеры
-            const canvasContainer = document.querySelector('.canvas-container');
-            if (canvasContainer) {
-                canvasContainer.style.width = availableWidth + 'px';
-                canvasContainer.style.height = availableHeight + 'px';
-            }
+            // Синхронизируем размеры контейнера
+            this.syncContainerSize();
             
             this.centerCanvas();
         }
